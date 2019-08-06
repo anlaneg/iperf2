@@ -293,6 +293,7 @@ double Client::Connect() {
 
     SockAddr_localAddr( mSettings );
 
+    //地址绑定
     if ( mSettings->mLocalhost != NULL ) {
         // bind socket to local address
         rc = bind( mSettings->mSock, (sockaddr*) &mSettings->local,
@@ -486,6 +487,7 @@ void Client::Run( void ) {
 
 
 void Client::RunTCP( void ) {
+	//tcp报文发送
     while (InProgress()) {
         if (isModeAmount(mSettings)) {
 	    reportstruct->packetLen = ((mSettings->mAmount < (unsigned) mSettings->mBufLen) ? mSettings->mAmount : mSettings->mBufLen);
@@ -496,8 +498,10 @@ void Client::RunTCP( void ) {
 	    WriteTcpHdr(reportstruct);
 	}
 	// perform write
+	//向socket中执行write操作
 	reportstruct->packetLen = write( mSettings->mSock, mBuf, reportstruct->packetLen);
         if ( reportstruct->packetLen < 0 ) {
+        	//发送失败
 	    if (NONFATALTCPWRITERR(errno)) {
 	        reportstruct->errwrite=WriteErrAccount;
 	    } else if (FATALTCPWRITERR(errno)) {
@@ -509,6 +513,7 @@ void Client::RunTCP( void ) {
 	    }
 	    reportstruct->packetLen = 0;
 	} else {
+		//发送成功
 	    totLen += reportstruct->packetLen;
 	    reportstruct->errwrite=WriteNoErr;
 	}
@@ -524,6 +529,7 @@ void Client::RunTCP( void ) {
 	    reportstruct->packetTime.tv_usec = now.getUsecs();
 	}
 
+	//有报告生成间隔，处理report
 	if ((mSettings->mInterval > 0) || isEnhanced(mSettings)) {
             ReportPacket( mSettings->reporthdr, reportstruct );
         }

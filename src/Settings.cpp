@@ -287,7 +287,9 @@ void Settings_Initialize( thread_Settings *main ) {
 
 } // end Settings
 
+//将from的配置copy到into中
 void Settings_Copy( thread_Settings *from, thread_Settings **into ) {
+	//为into申请空间
     *into = new thread_Settings;
 #ifdef HAVE_THREAD_DEBUG
     thread_debug("Thread settings copy (malloc) from/to=%p/%p", (void *)from, (void *)*into);
@@ -298,6 +300,7 @@ void Settings_Copy( thread_Settings *from, thread_Settings **into ) {
         (*into)->mHost = new char[ strlen(from->mHost) + 1];
         strcpy( (*into)->mHost, from->mHost );
     }
+
     if ( from->mOutputFileName != NULL ) {
         (*into)->mOutputFileName = new char[ strlen(from->mOutputFileName) + 1];
         strcpy( (*into)->mOutputFileName, from->mOutputFileName );
@@ -394,11 +397,13 @@ void Settings_ParseCommandLine( int argc, char **argv, thread_Settings *mSetting
     int option;
     gnu_opterr = 1; // Fail on an unrecognized command line option
     while ( (option =
-             gnu_getopt_long( argc, argv, short_options,
-                              long_options, NULL )) != EOF ) {
+             gnu_getopt_long( argc, argv, short_options/*短选项*/,
+                              long_options/*长选项*/, NULL )) != EOF ) {
+    	//解析具体选项
         Settings_Interpret( option, gnu_optarg, mSettings );
     }
 
+    //报告不认识的选项
     for ( int i = gnu_optind; i < argc; i++ ) {
         fprintf( stderr, "%s: ignoring extra argument -- %s\n", argv[0], argv[i] );
     }
@@ -484,6 +489,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
 	    if (*end != '\0') {
 		fprintf (stderr, "Invalid value of '%s' for -i interval\n", optarg);
 	    } else {
+	    	//处理报告间隔时间
 	        if ( mExtSettings->mInterval < SMALLEST_INTERVAL ) {
 		    mExtSettings->mInterval = SMALLEST_INTERVAL;
 #ifndef HAVE_FASTSAMPLING
@@ -557,6 +563,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
             break;
 
         case 'v': // print version and exit
+        	//显示版本后退出
 	    fprintf( stderr, "%s", version );
             exit(1);
             break;
@@ -695,6 +702,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
             if ( mExtSettings->mThreadMode != kMode_Server ) {
                 fprintf( stderr, warn_invalid_single_threaded, option );
             } else {
+            	//指定客户端发送用的线程数
                 mExtSettings->mThreads = atoi( optarg );
             }
 #endif
@@ -1172,6 +1180,7 @@ void Settings_GetLowerCaseArg(const char *inarg, char *outarg) {
 void Settings_GenerateListenerSettings( thread_Settings *client, thread_Settings **listener ) {
     if ( !isCompat( client ) && \
          (client->mMode == kTest_DualTest || client->mMode == kTest_TradeOff) ) {
+    	//为listener申请空间
         *listener = new thread_Settings;
         memcpy(*listener, client, sizeof( thread_Settings ));
 	setCompat((*listener));

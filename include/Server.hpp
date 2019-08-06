@@ -71,8 +71,8 @@ public:
     ~Server();
 
     // accepts connection and receives data
-    void RunUDP ( void );
-    void RunTCP ( void );
+    void RunUDP ( void );//运行udp server
+    void RunTCP ( void );//运行tcp server
 
     void write_UDP_AckFIN( );
 

@@ -186,6 +186,7 @@ void thread_start( struct thread_Settings* thread ) {
 #if defined( HAVE_POSIX_THREAD )
 
         // pthreads -- spawn new thread
+        //创建新的thread
         if ( pthread_create( &thread->mTID, NULL, thread_run_wrapper, thread ) != 0 ) {
             WARN( 1, "pthread_create" );
 
@@ -298,6 +299,7 @@ DWORD WINAPI
 void*
 #endif
 thread_run_wrapper( void* paramPtr ) {
+	//iperf2各线程运行逻辑入口
     struct thread_Settings* thread = (struct thread_Settings*) paramPtr;
 
     // which type of object are we
@@ -310,6 +312,7 @@ thread_run_wrapper( void* paramPtr ) {
         case kMode_Client:
             {
                 /* Spawn a Client thread with these settings */
+            	//client入口
                 client_spawn( thread );
             } break;
         case kMode_Reporter:

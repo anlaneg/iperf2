@@ -112,6 +112,7 @@ private:
     double Connect( );
     void HdrXchange(int flags);
 
+    //客户端对应的配置
     thread_Settings *mSettings;
 #if WIN32
     SOCKET mySocket;

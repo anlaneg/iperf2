@@ -109,6 +109,7 @@ void SetSocketOptions( thread_Settings *inSettings ) {
 
 #if HAVE_DECL_SO_BINDTODEVICE
     if ((inSettings->mThreadMode == kMode_Client) && inSettings->mIfrnametx) {
+    	//指定了要发送的设备，将socket绑定到设备
         struct ifreq ifr;
 	memset(&ifr, 0, sizeof(ifr));
 	snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), inSettings->mIfrnametx);
@@ -128,6 +129,7 @@ void SetSocketOptions( thread_Settings *inSettings ) {
 
     // check if we're sending multicast
     if (isMulticast(inSettings)) {
+    	//udp的组播测试
 #ifdef HAVE_MULTICAST
 	if (!isUDP(inSettings)) {
 	    FAIL(1, "Multicast requires -u option ", inSettings);
@@ -184,6 +186,7 @@ void SetSocketOptions( thread_Settings *inSettings ) {
 #endif
 
     if ( !isUDP( inSettings ) ) {
+    	//tcp情况下，按参数设置mss大小
         // set the TCP maximum segment size
         setsock_tcp_mss( inSettings->mSock, inSettings->mMSS );
 

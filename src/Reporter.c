@@ -1569,6 +1569,7 @@ int reporter_condprintstats( ReporterData *stats, MultiHeader *multireport, int 
  * appropriate dispatch function
  */
 int reporter_print( ReporterData *stats, int type, int end ) {
+	//按report类型，调用相应回调，进行report输出
     switch ( type ) {
         case TRANSFER_REPORT:
             statistics_reports[stats->mode]( &stats->info );

@@ -90,6 +90,7 @@ public:
      * Set timestamp to current time.
      * ------------------------------------------------------------------- */
     void setnow( void ) {
+    	//获取当前系统时间
 #ifdef HAVE_CLOCK_GETTIME
 	struct timespec t1;
 	clock_gettime(CLOCK_REALTIME, &t1);

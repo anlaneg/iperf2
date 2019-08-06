@@ -91,6 +91,7 @@ int setsock_tcp_windowsize( int inSock, int inTCPWin, int inSend ) {
             }
 
             /* set TCP window shift */
+            //设置tcp窗口大小
             rc = setsockopt( inSock, IPPROTO_TCP, TCP_WINSHIFT,
                              (char*) &winShift, sizeof( winShift ));
             if ( rc < 0 ) {

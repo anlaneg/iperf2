@@ -86,7 +86,7 @@ typedef enum ThreadMode {
     kMode_ReporterClientFullDuplex,
     kMode_ReporterServer,
     kMode_ReporterServerFullDuplex,
-    kMode_Listener
+    kMode_Listener//服务器模式（-s参数）
 } ThreadMode;
 
 // report mode
@@ -128,6 +128,7 @@ typedef enum RateUnits {
 typedef struct thread_Settings {
     // Pointers
     char*  mFileName;               // -F
+    //连接的服务器地址
     char*  mHost;                   // -c
     char*  mLocalhost;              // -B
     char*  mOutputFileName;         // -o
@@ -142,6 +143,7 @@ typedef struct thread_Settings {
     struct thread_Settings *runNow;
     struct thread_Settings *runNext;
     // int's
+    //线程总数
     int mThreads;                   // -P
     int mTOS;                       // -S
 #if WIN32
@@ -181,6 +183,7 @@ typedef struct thread_Settings {
     int flags;
     int flags_extend;
     // enums (which should be special int's)
+    //线程模式（客户端，服务器）
     ThreadMode mThreadMode;         // -s or -c
     ReportMode mReportMode;
     TestMode mMode;                 // -r or -d
@@ -189,9 +192,11 @@ typedef struct thread_Settings {
     RateUnits mUDPRateUnits;        // -b is either bw or pps
     uintmax_t mAmount;             // -n or -t
     // doubles
+    //报告生成间隔
     double mInterval;               // -i
     // shorts
     unsigned short mListenPort;     // -L
+    //监听或者连接的远端port编号
     unsigned short mPort;           // -p
     unsigned short mBindPort;      // -B
     // chars
@@ -359,6 +364,7 @@ typedef struct thread_Settings {
 #define setSTDIN(settings)         settings->flags |= FLAG_STDIN
 #define setSTDOUT(settings)        settings->flags |= FLAG_STDOUT
 #define setSuggestWin(settings)    settings->flags |= FLAG_SUGGESTWIN
+//设置采用udp模式通信
 #define setUDP(settings)           settings->flags |= FLAG_UDP
 #define setModeTime(settings)      settings->flags |= FLAG_MODETIME
 #define setReport(settings)        settings->flags |= FLAG_REPORTSETTINGS

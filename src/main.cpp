@@ -164,9 +164,11 @@ int main( int argc, char **argv ) {
     // read settings from environment variables
     Settings_ParseEnvironment( ext_gSettings );
     // read settings from command-line parameters
+    //解析命令行参数
     Settings_ParseCommandLine( argc, argv, ext_gSettings );
 
     // Check for either having specified client or server
+    //拒绝掉非client又非server的ThreadMode
     if ((ext_gSettings->mThreadMode != kMode_Client) && (ext_gSettings->mThreadMode != kMode_Listener)) {
         // neither server nor client mode was specified
         // print usage and exit
@@ -198,6 +200,7 @@ int main( int argc, char **argv ) {
 	    return 0;
 	}
         // initialize client(s)
+		//	初始化客户端
         client_init( ext_gSettings );
 	ReporterThreadMode = kMode_ReporterClient;
 	break;
@@ -217,6 +220,7 @@ int main( int argc, char **argv ) {
 	}
 #else // *nix system
 	if ( isDaemon( ext_gSettings ) ) {
+		//生成daemon
 	    fprintf( stderr, "Running Iperf Server as a daemon\n");
 	    // Start the server as a daemon
 	    fflush(stderr);
@@ -234,6 +238,7 @@ int main( int argc, char **argv ) {
 #ifdef HAVE_THREAD
     // Last step is to initialize the reporter then start all threads
     {
+    //创建一个reportThread
 	thread_Settings *into = NULL;
 	// Create the settings structure for the reporter thread
 	Settings_Copy( ext_gSettings, &into );
