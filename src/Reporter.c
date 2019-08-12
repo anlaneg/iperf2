@@ -552,13 +552,16 @@ static inline ReportStruct *dequeue_packetring(ReportHeader* agent) {
   if (pr->producer == pr->consumer)
     return NULL;
 
+  //确定待出队的index
   int readindex;
   if ((pr->consumer + 1) == pr->maxcount)
     readindex = 0;
   else
     readindex = (pr->consumer + 1);
+  //取出readindex位置处的packet
   packet = (agent->packetring->data + readindex);
   // advance the consumer pointer last
+  //更新readindex
   pr->consumer = readindex;
   // Signal the traffic thread assigned to this ring
   // when the ring goes from having something to empty
@@ -1275,6 +1278,7 @@ int reporter_handle_packet( ReportHeader *reporthdr, ReportStruct *packet) {
  */
 void reporter_handle_multiple_reports( MultiHeader *reporthdr, Transfer_Info *stats, int force ) {
     if ( reporthdr != NULL ) {
+    	//仅多个threads情况下，汇总reports生效
         if ( reporthdr->threads > 1 ) {
             int i;
             Transfer_Info *current = NULL;
@@ -1357,7 +1361,7 @@ void reporter_handle_multiple_reports( MultiHeader *reporthdr, Transfer_Info *st
                     memcpy( &reporthdr->report->info, current, sizeof(Transfer_Info) );
                     current->startTime = -1;
                     reporthdr->report->info.reserved_delay = reserved;
-                    //
+                    //输出汇总信息
                     reporter_print( reporthdr->report, MULTIPLE_REPORT, force );
                 }
             }
@@ -1529,6 +1533,8 @@ int reporter_condprintstats( ReporterData *stats, MultiHeader *multireport, int 
 		//显示各transfer的report信息
 		reporter_print( stats, TRANSFER_REPORT, force );
 	    }
+
+	    //显示汇总信息
 	    if ( isMultipleReport(stats) ) {
 	        reporter_handle_multiple_reports( multireport, &stats->info, force );
 	    }
