@@ -82,6 +82,7 @@ typedef struct Condition {
     // initialize condition
 #if   defined( HAVE_POSIX_THREAD )
     #define Condition_Initialize( Cond ) do {             \
+    	/*初始化条件变量*/\
         Mutex_Initialize( &(Cond)->mMutex );              \
         pthread_cond_init( &(Cond)->mCondition, NULL );   \
     } while ( 0 )

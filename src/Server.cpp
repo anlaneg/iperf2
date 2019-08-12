@@ -123,7 +123,7 @@ Server::~Server() {
 
 bool Server::InProgress (void) {
     if (sInterupted ||
-	((isServerModeTime(mSettings) || (isModeTime(mSettings) && isReverse(mSettings))) && mEndTime.before(reportstruct->packetTime)))
+	((isServerModeTime(mSettings)/*需要持续一段时间*/ || (isModeTime(mSettings) && isReverse(mSettings))) && mEndTime.before(reportstruct->packetTime)))
 	return false;
     return true;
 }
@@ -147,16 +147,19 @@ void Server::RunTCP( void ) {
 	reportstruct->emptyreport=0;
 	// perform read
 	if (isBWSet(mSettings)) {
+		//设置了带宽
 	    time2.setnow();
 	    tokens += time2.subSec(time1) * (mSettings->mUDPRate / 8.0);
 	    time1 = time2;
 	}
 	if (tokens >= 0.0) {
+		//自socket中读取数据
 	    currLen = recv( mSettings->mSock, mBuf, mSettings->mBufLen, 0 );
 	    now.setnow();
 	    reportstruct->packetTime.tv_sec = now.getSecs();
 	    reportstruct->packetTime.tv_usec = now.getUsecs();
 	    if (currLen <= 0) {
+	    	//出错或者收取结束
 		reportstruct->emptyreport=1;
 		// End loop on 0 read or socket error
 		// except for socket read timeout
@@ -167,6 +170,7 @@ void Server::RunTCP( void ) {
 		    (errno != EAGAIN && errno != EWOULDBLOCK)
 #endif // WIN32
 		    ) {
+			//读取出错或者关闭
 		    err = 1;
 		}
 		currLen = 0;
@@ -175,6 +179,7 @@ void Server::RunTCP( void ) {
 	    if (isBWSet(mSettings))
 		tokens -= currLen;
 	    if (0.0 != mSettings->mInterval) {
+	    	//执行间隔report
 	      reportstruct->packetLen = currLen;
 	      ReportPacket( mSettings->reporthdr, reportstruct );
 	    }
@@ -182,20 +187,24 @@ void Server::RunTCP( void ) {
 	    // the server stops after receiving
 	    // the expected byte count
 	    if (isReverse(mSettings) && !isModeTime(mSettings) && (totLen >= (intmax_t) mSettings->mAmount)) {
+	    	//退出读取
 	        break;
 	    }
 	} else {
 	    // Use a 4 usec delay to fill tokens
+		//token不足，等待4us
 	    delay_loop(4);
 	}
     }
 
+    //接收停止，执行report
     // stop timing
     now.setnow();
     reportstruct->packetTime.tv_sec = now.getSecs();
     reportstruct->packetTime.tv_usec = now.getUsecs();
 
     if(0.0 == mSettings->mInterval) {
+    	//执行report
 	reportstruct->packetLen = totLen;
 	ReportPacket( mSettings->reporthdr, reportstruct );
     }
@@ -220,6 +229,7 @@ void Server::InitKernelTimeStamping (void) {
     message.msg_control = (char *) ctrl;
     message.msg_controllen = sizeof(ctrl);
 
+    //开启socket发出去报文中包含时间签
     int timestampOn = 1;
     if (setsockopt(mSettings->mSock, SOL_SOCKET, SO_TIMESTAMP, (int *) &timestampOn, sizeof(timestampOn)) < 0) {
 	WARN_errno( mSettings->mSock == SO_TIMESTAMP, "socket" );
@@ -281,6 +291,7 @@ void Server::InitTrafficLoop (void) {
 	timeout.tv_sec = sorcvtimer / 1000000;
 	timeout.tv_usec = sorcvtimer % 1000000;
 #endif
+	//设置接收报文超时
 	if (setsockopt( mSettings->mSock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0 ) {
 	    WARN_errno( mSettings->mSock == SO_RCVTIMEO, "socket" );
 	}

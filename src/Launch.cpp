@@ -69,6 +69,7 @@
 #endif
 static void set_scheduler(thread_Settings *thread) {
 #if HAVE_SCHED_SETSCHEDULER
+	//如果设置为realtime，则更改调度
     if ( isRealtime( thread ) ) {
 	struct sched_param sp;
 	sp.sched_priority = sched_get_priority_max(SCHED_RR);

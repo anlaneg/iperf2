@@ -72,6 +72,7 @@ void reporter_printstats( Transfer_Info *stats ) {
     static char header_printed = 0;
     double bytesxfered;
 
+    //将TotalLen输出到buffer前半部分
     byte_snprintf( buffer, sizeof(buffer)/2, (double) stats->TotalLen,
                    toupper( (int)stats->mFormat));
     if (!stats->TotalLen || (stats->endTime < SMALLEST_INTERVAL)) {
@@ -79,21 +80,28 @@ void reporter_printstats( Transfer_Info *stats ) {
     } else {
         bytesxfered = (double) stats->TotalLen;
     }
+
+    //将速率进行格式化输出buffer后半部分
     byte_snprintf( &buffer[sizeof(buffer)/2], sizeof(buffer)/2,
                    (bytesxfered / (stats->endTime - stats->startTime)),
 		   stats->mFormat);
 
     // TCP reports
     if (!stats->mUDP) {
+    	//tcp reports生成
 	if (!stats->mEnhanced) {
 	    if( !header_printed ) {
+	    	//如果未输出header line,则输出
 		printf( "%s", report_bw_header);
 		header_printed = 1;
 	    }
+
+	    //输出 transferID,startTime,Endtime,传输量，传输速率
 	    printf(report_bw_format, stats->transferID,
 		   stats->startTime, stats->endTime,
 		   buffer, &buffer[sizeof(buffer)/2]);
 	} else {
+		//增强性结果输出
 	    if( !header_printed ) {
 		printf((stats->mTCP == (char)kMode_Server ? report_bw_read_enhanced_header : report_bw_write_enhanced_header), (stats->sock_callstats.read.binsize/1024.0));
 		header_printed = 1;
@@ -121,6 +129,7 @@ void reporter_printstats( Transfer_Info *stats ) {
 #ifdef HAVE_STRUCT_TCP_INFO_TCPI_TOTAL_RETRANS
 	        double netpower = 0;
 		if (stats->sock_callstats.write.rtt > 0) {
+			//依据速率除以rtt后得到
 		  netpower = NETPOWERCONSTANT * (((double) bytesxfered / (double) (stats->endTime - stats->startTime)) / (1e-6 * stats->sock_callstats.write.rtt));
 	        }
 	        if (stats->sock_callstats.write.cwnd > 0) {
@@ -326,6 +335,7 @@ void reporter_multistats( Transfer_Info *stats ) {
 		   (100.0 * stats->cntError) / stats->cntDatagrams);
 	} else {
         // TCP Reporting
+		// tcp 汇总report
 	    printf(report_sum_bw_format,
 		    stats->startTime, stats->endTime,
 		    buffer, &buffer[sizeof(buffer)/2]);
@@ -349,6 +359,7 @@ void reporter_multistats( Transfer_Info *stats ) {
 		    (stats->IPGcnt ? (stats->IPGcnt / stats->IPGsum) : 0.0));
 	} else {
 	    // TCP Enhanced Reporting
+		// tcp增强性report
 	    if (stats->mTCP == (char)kMode_Client) {
 		printf( report_sum_bw_write_enhanced_format,
 			stats->startTime, stats->endTime,

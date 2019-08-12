@@ -263,7 +263,7 @@ void byte_snprintf( char* outString, int inLen,
 
     /* convert to bits for [bkmga] */
     if ( ! isupper( (int)inFormat ) ) {
-        inNum *= 8;
+        inNum *= 8;//转换到bits
     }
 
     switch ( toupper( (int)inFormat) ) {
@@ -294,6 +294,7 @@ void byte_snprintf( char* outString, int inLen,
 	}
     }
 
+    //大小写分别对应1024/1000统计
     if ( ! isupper ((int)inFormat) ) {
         inNum *= kConversionForBits[ conv ];
         suffix = kLabel_bit[conv];
@@ -314,6 +315,8 @@ void byte_snprintf( char* outString, int inLen,
 				     * this code will not control spaces*/
         format = "%4.0f %s";        /* #### */
     }
+
+    //将inNum按格式串format执行输出
     snprintf( outString, inLen, format, inNum, suffix );
 } /* end byte_snprintf */
 

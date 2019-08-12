@@ -160,6 +160,7 @@ void SetSocketOptions( thread_Settings *inSettings ) {
 	}
 #endif
     } else if (inSettings->mTTL > 0) {
+    	//设置报文的ttl
 	int val = inSettings->mTTL;
 	int rc = setsockopt( inSettings->mSock, IPPROTO_IP, IP_TTL,
 			     (char*) &val, (Socklen_t) sizeof(val));
@@ -177,6 +178,7 @@ void SetSocketOptions( thread_Settings *inSettings ) {
 #endif
     // set IP TOS (type-of-service) field
     if ( inSettings->mTOS > 0 ) {
+    	//设置报文发送出去时的tos
         int  tos = inSettings->mTOS;
         Socklen_t len = sizeof(tos);
         int rc = setsockopt( inSettings->mSock, IPPROTO_IP, IP_TOS,

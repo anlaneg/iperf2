@@ -110,6 +110,7 @@ report_serverstatistics serverstatistics_reports[kReport_MAXIMUM] = {
     CSV_serverstats
 };
 
+//汇总信息输出
 report_statistics multiple_reports[kReport_MAXIMUM] = {
     reporter_multistats,
     CSV_stats
@@ -1356,6 +1357,7 @@ void reporter_handle_multiple_reports( MultiHeader *reporthdr, Transfer_Info *st
                     memcpy( &reporthdr->report->info, current, sizeof(Transfer_Info) );
                     current->startTime = -1;
                     reporthdr->report->info.reserved_delay = reserved;
+                    //
                     reporter_print( reporthdr->report, MULTIPLE_REPORT, force );
                 }
             }
@@ -1524,6 +1526,7 @@ int reporter_condprintstats( ReporterData *stats, MultiHeader *multireport, int 
 		stats->info.TotalLen = stats->TotalLen - stats->lastTotal;
 		stats->lastTotal = stats->TotalLen;
 		stats->info.free = 0;
+		//显示各transfer的report信息
 		reporter_print( stats, TRANSFER_REPORT, force );
 	    }
 	    if ( isMultipleReport(stats) ) {
@@ -1568,12 +1571,13 @@ int reporter_condprintstats( ReporterData *stats, MultiHeader *multireport, int 
  * This function handles multiple format printing by sending to the
  * appropriate dispatch function
  */
-int reporter_print( ReporterData *stats, int type, int end ) {
+int reporter_print( ReporterData *stats, int type/*report类型*/, int end ) {
 	//按report类型，调用相应回调，进行report输出
     switch ( type ) {
         case TRANSFER_REPORT:
             statistics_reports[stats->mode]( &stats->info );
             if ( end != 0 && isPrintMSS( stats ) && !isUDP( stats ) ) {
+            	//mss显示
                 PrintMSS( stats );
             }
             break;
@@ -1636,6 +1640,7 @@ void PrintMSS( ReporterData *stats ) {
             net = "unknown interface";
         }
 
+        //显示网络类型,mtu,及mss
         printf( report_mss,
                 stats->info.transferID, inMSS, mtu, net );
     }

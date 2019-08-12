@@ -83,6 +83,7 @@ static int txholdback = 0;
 static int fqrate = 0;
 static int triptime = 0;
 static int writeack = 0;
+//采用-t时间为<0的数时，生效，无终止运行
 static int infinitetime = 0;
 static int connectonly = 0;
 #ifdef HAVE_ISOCHRONOUS
@@ -259,6 +260,7 @@ void Settings_Initialize( thread_Settings *main ) {
     //main->mPrintMSS   = false;         // -m,  don't print MSS
     // mAmount is time also              // -n,  N/A
     //main->mOutputFileName = NULL;      // -o,  filename
+    //默认使用5001号端口
     main->mPort         = 5001;          // -p,  ttcp port
     main->mBindPort     = 0;             // -B,  default port for bind
     // mMode    = kTest_Normal;          // -r,  mMode == kTest_TradeOff
@@ -380,6 +382,7 @@ void Settings_ParseEnvironment( thread_Settings *mSettings ) {
     char *theVariable;
 
     int i = 0;
+    //取环境变量中的具体选项的值，设置到mSettings
     while ( env_options[i].name != NULL ) {
         theVariable = getenv( env_options[i].name );
         if ( theVariable != NULL ) {
@@ -416,7 +419,7 @@ void Settings_ParseCommandLine( int argc, char **argv, thread_Settings *mSetting
  * Interpret individual options, either from the command line
  * or from environment variables.
  * ------------------------------------------------------------------- */
-
+//解析选项，填充mExtSettings
 void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtSettings ) {
     char *results;
     switch ( option ) {
@@ -431,9 +434,11 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
 		// scan for PPS units, just look for 'p' as that's good enough
 		if ((((results = strtok(tmp, "p")) != NULL) && strcmp(results,optarg)) \
 		    || (((results = strtok(tmp, "P")) != NULL)  && strcmp(results,optarg))) {
+			//pps格式的带宽方式
 		    mExtSettings->mUDPRateUnits = kRate_PPS;
 		    mExtSettings->mUDPRate = byte_atoi(results);
 		} else {
+			//GMKb格式的带宽方式
 		    mExtSettings->mUDPRateUnits = kRate_BW;
 		    mExtSettings->mUDPRate = byte_atoi(optarg);
 		    if (((results = strtok(tmp, ",")) != NULL) && strcmp(results,optarg)) {
@@ -446,6 +451,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
 	    setBWSet( mExtSettings );
 	    break;
         case 'c': // client mode w/ server host to connect to
+        	//设置连接到对端的ip
             mExtSettings->mHost = new char[ strlen( optarg ) + 1 ];
             strcpy( mExtSettings->mHost, optarg );
 
@@ -456,6 +462,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
             break;
 
         case 'd': // Dual-test Mode
+        	//双向测试
             if ( mExtSettings->mThreadMode != kMode_Client ) {
                 fprintf( stderr, warn_invalid_server_option, option );
                 break;
@@ -471,6 +478,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
 #endif
             break;
         case 'e': // Use enhanced reports
+        	//开启增强性reports
             setEnhanced( mExtSettings );
             break;
         case 'f': // format to print in
@@ -484,6 +492,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
             break;
 
         case 'i': // specify interval between periodic bw reports
+        	//指定reports的周期
 	    char *end;
 	    mExtSettings->mInterval = strtof( optarg, &end );
 	    if (*end != '\0') {
@@ -497,12 +506,14 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
 #endif
 	        }
 		if ( mExtSettings->mInterval < 0.5 ) {
+			//间隔过小，开启增强性reports
 		    setEnhanced( mExtSettings );
 		}
 	    }
             break;
 
         case 'l': // length of each buffer
+        	//设置读写buffer的长度
             mExtSettings->mBufLen = byte_atoi( optarg );
             setBuflenSet( mExtSettings );
             break;
@@ -513,11 +524,13 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
 
         case 'n': // bytes of data
             // amount mode (instead of time mode)
+        	//取消对测试时间的指定，指定为按传输量处理mAmount字节
             unsetModeTime( mExtSettings );
             mExtSettings->mAmount = byte_atoi( optarg );
             break;
 
         case 'o' : // output the report and other messages into the file
+        	//将report及其它信息输出到指定文件
             unsetSTDOUT( mExtSettings );
             mExtSettings->mOutputFileName = new char[strlen(optarg)+1];
             strcpy( mExtSettings->mOutputFileName, optarg);
@@ -550,11 +563,13 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
 
         case 't': // seconds to run the client, server, listener
             // time mode (instead of amount mode), units is 10 ms
+        	//持续运行一段时间
             setModeTime( mExtSettings );
             setServerModeTime( mExtSettings );
 	    if (atoi(optarg) > 0)
                 mExtSettings->mAmount = (int) (atof( optarg ) * 100.0);
 	    else
+	    	//如果时间非正数，则会一直运行
 	        infinitetime = 1;
             break;
 
@@ -569,6 +584,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
             break;
 
         case 'w': // TCP window size (socket buffer size)
+        	//设置tcp窗口中大小
             mExtSettings->mTCPWin = byte_atoi(optarg);
 
             if ( mExtSettings->mTCPWin < 2048 ) {
@@ -577,6 +593,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
             break;
 
         case 'x': // Limit Reports
+        	//设置要排除的report
             while ( *optarg != '\0' ) {
                 switch ( *optarg ) {
                     case 's':
@@ -612,6 +629,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
 #endif
 
         case 'y': // Reporting Style
+        	//设置report样式
             switch ( *optarg ) {
                 case 'c':
                 case 'C':
@@ -632,6 +650,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
             break;
 
         case 'C': // Run in Compatibility Mode, i.e. no intial nor final header messaging
+        	//设置兼容模式
             setCompat( mExtSettings );
             if ( mExtSettings->mMode != kTest_Normal ) {
                 fprintf( stderr, warn_invalid_compatibility_option,
@@ -646,6 +665,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
             break;
 
         case 'F' : // Get the input for the data stream from a file
+        	//客户端有效，指明客户端自文件中读取内容
             if ( mExtSettings->mThreadMode != kMode_Client ) {
                 fprintf( stderr, warn_invalid_server_option, option );
                 break;
@@ -688,6 +708,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
             break;
 
         case 'M': // specify TCP MSS (maximum segment size)
+        	//使用指定的mss
             mExtSettings->mMSS = byte_atoi( optarg );
             break;
 
@@ -718,6 +739,7 @@ void Settings_Interpret( char option, const char *optarg, thread_Settings *mExtS
 #endif
 
         case 'S': // IP type-of-service
+        	//设置tos
             // TODO use a function that understands base-2
             // the zero base here allows the user to specify
             // "0x#" hex, "0#" octal, and "#" decimal numbers

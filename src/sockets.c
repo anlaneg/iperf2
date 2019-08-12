@@ -100,7 +100,7 @@ void setsock_tcp_mss( int inSock, int inMSS ) {
 /* -------------------------------------------------------------------
  * returns the TCP maximum segment size
  * ------------------------------------------------------------------- */
-
+//通过socket获取mss
 int getsock_tcp_mss( int inSock ) {
     int theMSS = 0;
 

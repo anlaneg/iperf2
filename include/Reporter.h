@@ -107,15 +107,15 @@ typedef struct ReadStats {
 } ReadStats;
 
 typedef struct WriteStats {
-    int WriteCnt;
-    int WriteErr;
-    int TCPretry;
+    int WriteCnt;//写的次数
+    int WriteErr;//写失败次数
+    int TCPretry;//tcp retry次数
     int totWriteCnt;
     int totWriteErr;
     int totTCPretry;
     int lastTCPretry;
-    int cwnd;
-    int rtt;
+    int cwnd;//窗口大小
+    int rtt;//rtt值
     double meanrtt;
     int up_to_date;
 } WriteStats;
@@ -167,6 +167,7 @@ typedef struct ReportStruct {
     struct timeval packetTime;
     struct timeval sentTime;
     int errwrite;
+    //未收到报文
     int emptyreport;
     int socket;
     int l2errors;
@@ -199,7 +200,7 @@ typedef union {
 
 typedef struct Transfer_Info {
     void *reserved_delay;
-    int transferID;
+    int transferID;//线程id
     int groupID;
     intmax_t cntError;
     intmax_t cntOutofOrder;
@@ -211,8 +212,8 @@ typedef struct Transfer_Info {
     // Hopefully int64_t's
     uintmax_t TotalLen;
     double jitter;
-    double startTime;
-    double endTime;
+    double startTime;//统计起始时间
+    double endTime;//统计终止时间
     double IPGsum;
     double tripTime;
     // chars
@@ -295,6 +296,7 @@ typedef struct ReporterData {
     // shorts
     unsigned short mPort;           // -p
     // structs or miscellaneous
+    //传输统计周期内数据
     Transfer_Info info;
     Connection_Info connection;
     struct timeval startTime;

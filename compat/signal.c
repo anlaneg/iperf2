@@ -131,7 +131,7 @@ SigfuncPtr my_signal( int inSigno, SigfuncPtr inFunc ) {
  *
  * from Stevens, 1998, section 5.8
  * ------------------------------------------------------------------- */
-
+//注册信号处理回调
 SigfuncPtr my_signal( int inSigno, SigfuncPtr inFunc ) {
     struct sigaction theNewAction, theOldAction;
 

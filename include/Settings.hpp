@@ -131,6 +131,7 @@ typedef struct thread_Settings {
     //连接的服务器地址
     char*  mHost;                   // -c
     char*  mLocalhost;              // -B
+    //通过-o指定，用于将reports及其它信息输出到文件
     char*  mOutputFileName;         // -o
     char*  mIfrname;                // %<device> name (for rx)
     char*  mIfrnametx;              // %<device> name (for tx)
@@ -145,6 +146,7 @@ typedef struct thread_Settings {
     // int's
     //线程总数
     int mThreads;                   // -P
+    //报文的tos值
     int mTOS;                       // -S
 #if WIN32
     SOCKET mSock;
@@ -155,8 +157,11 @@ typedef struct thread_Settings {
     int mSockDrop;
 #endif
     int Extractor_size;
+    //读写buffer的长度
     int mBufLen;                    // -l
+    //指明对应的mss
     int mMSS;                       // -M
+    //设置tcp窗口大小
     int mTCPWin;                    // -w
     /*   flags is a BitMask of old bools
         bool   mBufLenSet;              // -l
@@ -185,11 +190,13 @@ typedef struct thread_Settings {
     // enums (which should be special int's)
     //线程模式（客户端，服务器）
     ThreadMode mThreadMode;         // -s or -c
+    //report样式（默认样式及csv样式）
     ReportMode mReportMode;
     TestMode mMode;                 // -r or -d
     // Hopefully int64_t's
     intmax_t mUDPRate;            // -b or -u
     RateUnits mUDPRateUnits;        // -b is either bw or pps
+    //-n表示测试传送多少数据，-t表示测试传输多长时间
     uintmax_t mAmount;             // -n or -t
     // doubles
     //报告生成间隔
@@ -200,7 +207,9 @@ typedef struct thread_Settings {
     unsigned short mPort;           // -p
     unsigned short mBindPort;      // -B
     // chars
+    //显示reports格式（例如G，M，K）
     char   mFormat;                 // -f
+    //报文头部的ttl取值
     int mTTL;                    // -T
     char pad1[2];
     // structs or miscellaneous
@@ -273,10 +282,12 @@ typedef struct thread_Settings {
 #define FLAG_NODATAREPORT   0x00020000
 #define FLAG_NOSERVREPORT   0x00040000
 #define FLAG_NOMULTREPORT   0x00080000
+//单客户端
 #define FLAG_SINGLECLIENT   0x00100000
 #define FLAG_SINGLEUDP      0x00200000
 #define FLAG_CONGESTION     0x00400000
 #define FLAG_REALTIME       0x00800000
+//带宽被设置
 #define FLAG_BWSET          0x01000000
 #define FLAG_ENHANCEDREPORT 0x02000000
 #define FLAG_SERVERMODETIME 0x04000000
@@ -353,12 +364,17 @@ typedef struct thread_Settings {
 #define isConnectOnly(settings)    ((settings->flags_extend & FLAG_CONNECTONLY) != 0)
 #define isWriteAck(settings)       ((settings->flags_extend & FLAG_WRITEACK) != 0)
 
+//设置了读写buffer的长度
 #define setBuflenSet(settings)     settings->flags |= FLAG_BUFLENSET
+//指明运行在旧的兼容模式（不发送额外的头部信息）
 #define setCompat(settings)        settings->flags |= FLAG_COMPAT
+//指明按daemon运行
 #define setDaemon(settings)        settings->flags |= FLAG_DAEMON
 #define setIPV6(settings)          settings->flags |= FLAG_DOMAIN
+//指明自文件读取输入内容
 #define setFileInput(settings)     settings->flags |= FLAG_FILEINPUT
 #define setNoDelay(settings)       settings->flags |= FLAG_NODELAY
+//设置了打印mss命令行
 #define setPrintMSS(settings)      settings->flags |= FLAG_PRINTMSS
 #define setRemoveService(settings) settings->flags |= FLAG_REMOVESERVICE
 #define setSTDIN(settings)         settings->flags |= FLAG_STDIN
@@ -366,6 +382,7 @@ typedef struct thread_Settings {
 #define setSuggestWin(settings)    settings->flags |= FLAG_SUGGESTWIN
 //设置采用udp模式通信
 #define setUDP(settings)           settings->flags |= FLAG_UDP
+//设置需要持续测试一段时间
 #define setModeTime(settings)      settings->flags |= FLAG_MODETIME
 #define setReport(settings)        settings->flags |= FLAG_REPORTSETTINGS
 #define setMulticast(settings)     settings->flags |= FLAG_MULTICAST
@@ -378,9 +395,12 @@ typedef struct thread_Settings {
 #define setSingleClient(settings)  settings->flags |= FLAG_SINGLECLIENT
 #define setSingleUDP(settings)     settings->flags |= FLAG_SINGLEUDP
 #define setCongestionControl(settings) settings->flags |= FLAG_CONGESTION
+//开启实时调度
 #define setRealtime(settings)      settings->flags |= FLAG_REALTIME
 #define setBWSet(settings)         settings->flags |= FLAG_BWSET
+//开启增强性reports
 #define setEnhanced(settings)      settings->flags |= FLAG_ENHANCEDREPORT
+//设置server需要持续运行一段时间
 #define setServerModeTime(settings)      settings->flags |= FLAG_SERVERMODETIME
 #define setPeerVerDetect(settings) settings->flags_extend |= FLAG_PEERVER
 #define setSeqNo64b(settings)      settings->flags_extend |= FLAG_SEQNO64
@@ -412,6 +432,7 @@ typedef struct thread_Settings {
 #define unsetSTDOUT(settings)      settings->flags &= ~FLAG_STDOUT
 #define unsetSuggestWin(settings)  settings->flags &= ~FLAG_SUGGESTWIN
 #define unsetUDP(settings)         settings->flags &= ~FLAG_UDP
+//取消对测试时间的指定
 #define unsetModeTime(settings)    settings->flags &= ~FLAG_MODETIME
 #define unsetReport(settings)      settings->flags &= ~FLAG_REPORTSETTINGS
 #define unsetMulticast(settings)   settings->flags &= ~FLAG_MULTICAST
