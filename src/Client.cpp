@@ -503,8 +503,10 @@ void Client::RunTCP( void ) {
         if ( reportstruct->packetLen < 0 ) {
         	//发送失败
 	    if (NONFATALTCPWRITERR(errno)) {
+	    	//需要重试或者被中断
 	        reportstruct->errwrite=WriteErrAccount;
 	    } else if (FATALTCPWRITERR(errno)) {
+	    	//发送出错
 	        reportstruct->errwrite=WriteErrFatal;
 	        WARN_errno( 1, "write" );
 		break;

@@ -107,15 +107,15 @@ typedef struct ReadStats {
 } ReadStats;
 
 typedef struct WriteStats {
-    int WriteCnt;//写的次数
-    int WriteErr;//写失败次数
-    int TCPretry;//tcp retry次数
+    int WriteCnt;//本次统计周期写的次数
+    int WriteErr;//本次统计周期写失败次数（重试，或出错均算在内）
+    int TCPretry;//本次统计周期总的重传次数
     int totWriteCnt;
     int totWriteErr;
-    int totTCPretry;
-    int lastTCPretry;
+    int totTCPretry;//测试期间总的重传数
+    int lastTCPretry;//上个统计期重传基数
     int cwnd;//窗口大小
-    int rtt;//rtt值
+    int rtt;//当前rtt值
     double meanrtt;
     int up_to_date;
 } WriteStats;

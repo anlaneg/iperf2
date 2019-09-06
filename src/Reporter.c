@@ -549,6 +549,7 @@ static inline void enqueue_packetring(ReportHeader* agent, ReportStruct *metapac
 static inline ReportStruct *dequeue_packetring(ReportHeader* agent) {
   PacketRing *pr = agent->packetring;
   ReportStruct *packet = NULL;
+  //队列为空
   if (pr->producer == pr->consumer)
     return NULL;
 
@@ -565,6 +566,7 @@ static inline ReportStruct *dequeue_packetring(ReportHeader* agent) {
   pr->consumer = readindex;
   // Signal the traffic thread assigned to this ring
   // when the ring goes from having something to empty
+  //出队后队列为空，知会入队方
   if (pr->producer == pr->consumer) {
 #ifdef HAVE_THREAD_DEBUG
     // thread_debug( "Consumer signal packet ring %p empty per %p", (void *)pr, (void *)&pr->await_consumer);
@@ -1379,6 +1381,7 @@ static void gettcpistats (ReporterData *stats, int final) {
     // on  a report interval period.
     int rc = (stats->info.socket==INVALID_SOCKET) ? 0 : 1;
     if (rc) {
+    	//通过getsockopt	取socket中的rtt等
         rc = (getsockopt(stats->info.socket, IPPROTO_TCP, TCP_INFO, &tcp_internal, &tcp_info_length) < 0) ? 0 : 1;
 	if (!rc)
 	    stats->info.socket = INVALID_SOCKET;
@@ -1391,11 +1394,13 @@ static void gettcpistats (ReporterData *stats, int final) {
 	stats->info.sock_callstats.write.cwnd = -1;
 	stats->info.sock_callstats.write.rtt = 0;
     } else {
+    	//获得重传增量
         retry = tcp_internal.tcpi_total_retrans - stats->info.sock_callstats.write.lastTCPretry;
-	stats->info.sock_callstats.write.TCPretry = retry;
-	stats->info.sock_callstats.write.totTCPretry += retry;
+	stats->info.sock_callstats.write.TCPretry = retry;//统计期间重传增量
+	stats->info.sock_callstats.write.totTCPretry += retry;//总重传次数
 	stats->info.sock_callstats.write.lastTCPretry = tcp_internal.tcpi_total_retrans;
 	stats->info.sock_callstats.write.cwnd = tcp_internal.tcpi_snd_cwnd * tcp_internal.tcpi_snd_mss / 1024;
+	//记录rtt
 	stats->info.sock_callstats.write.rtt = tcp_internal.tcpi_rtt;
 	// New average = old average * (n-1)/n + new value/n
 	cnt++;
