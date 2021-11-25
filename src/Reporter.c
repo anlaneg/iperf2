@@ -1042,6 +1042,7 @@ int reporter_process_report ( ReportHeader *reporthdr ) {
 	    // thrashing,
 	    consumption_detector.accounted_packets--;
 	    if (reporthdr->packet_handler) {
+	        /*报告结果*/
 	        int event_lastpacket = (*reporthdr->packet_handler)(reporthdr, packet);
 		if (event_lastpacket) {
 		    reporthdr->packetring->consumerdone = 1;
@@ -1113,7 +1114,7 @@ int reporter_handle_packet( ReportHeader *reporthdr, ReportStruct *packet) {
 	// These are valid packets that need standard iperf accounting
 	if (!packet->emptyreport) {
 	    // update fields common to TCP and UDP, client and server
-	    data->TotalLen += packet->packetLen;
+	    data->TotalLen += packet->packetLen;/*增加报文长度*/
 	    // update fields common to TCP and UDP client
 	    // update fields common to UDP client and server
             if ( isUDP( data ) ) {
